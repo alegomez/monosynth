@@ -1,3 +1,4 @@
+import "./main.css";
 const context = new (window.AudioContext || window.webkitAudioContext)();
 let midiAccess = null;
 
@@ -37,11 +38,10 @@ const analyser = context.createAnalyser();
 
 envelope.gain.value = 0.0;
 
-const activeNotes = [];
 let attack = 0.1;
 let decay = 0.1;
 let release = 0.1;
-let sustain = 1.0;
+let sustain = 0.1;
 const portamento = 0.0; // portamento/glide speed
 
 const normaliseVal = (v, max = 100) => {
@@ -78,6 +78,7 @@ releaseSlider.oninput = e => {
   release = normaliseVal(e.target.valueAsNumber);
 };
 
+// oscillator
 const oscillator = context.createOscillator();
 oscillator.type = oscTypeSelector.value;
 
@@ -97,7 +98,6 @@ const frequencyFromNoteNumber = note => {
 };
 
 const noteOn = noteNumber => {
-  activeNotes.push(noteNumber);
   oscillator.frequency.cancelScheduledValues(0);
   oscillator.frequency.setTargetAtTime(
     frequencyFromNoteNumber(noteNumber),
@@ -112,23 +112,9 @@ const noteOn = noteNumber => {
   );
 };
 
-const noteOff = noteNumber => {
-  let position = activeNotes.indexOf(noteNumber);
-  if (position != -1) {
-    activeNotes.splice(position, 1);
-  }
-  if (activeNotes.length == 0) {
-    envelope.gain.cancelScheduledValues(0);
-    envelope.gain.setTargetAtTime(0.0, 0, release);
-    //envelope.linearRampToValueAtTime(0, context.currentTime + release);
-  } else {
-    oscillator.frequency.cancelScheduledValues(0);
-    oscillator.frequency.setTargetAtTime(
-      frequencyFromNoteNumber(activeNotes[activeNotes.length - 1]),
-      0,
-      portamento
-    );
-  }
+const noteOff = () => {
+  envelope.gain.cancelScheduledValues(0);
+  envelope.gain.setTargetAtTime(0.0, 0, release);
 };
 
 const MIDIMessageEventHandler = event => {
@@ -139,7 +125,7 @@ const MIDIMessageEventHandler = event => {
         return;
       }
     case 128:
-      noteOff(event.data[1]);
+      noteOff();
       return;
     case 176:
       const normalised = normaliseVal(event.data[2]);
