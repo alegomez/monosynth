@@ -30,7 +30,6 @@ if (navigator.requestMIDIAccess) {
 // compressor.attack.setValueAtTime(0, context.currentTime);
 // compressor.release.setValueAtTime(0.25, context.currentTime);
 
-const delay = context.createDelay(10);
 const biquadFilter = context.createBiquadFilter();
 
 const envelope = context.createGain();
@@ -49,6 +48,7 @@ const normaliseVal = (v, max = 100) => {
   return v === 0 ? 0.01 : v / max;
 };
 
+// UI
 const oscTypeSelector = document.querySelector("#type");
 oscTypeSelector.onchange = e => {
   oscillator.type = e.target.value;
@@ -83,8 +83,7 @@ oscillator.type = oscTypeSelector.value;
 
 // circuitry
 oscillator.connect(biquadFilter);
-biquadFilter.connect(delay);
-delay.connect(envelope);
+biquadFilter.connect(envelope);
 envelope.connect(analyser);
 analyser.connect(context.destination);
 oscillator.start(0);
@@ -186,18 +185,15 @@ const draw = () => {
   canvasCtx.beginPath();
   const sliceWidth = (WIDTH * 1.0) / bufferLength;
   let x = 0;
-  for (let i = 0; i < bufferLength; i++) {
-    const v = dataArray[i] / 128.0;
-    const y = (v * HEIGHT) / 2;
-
+  dataArray.forEach((d, i) => {
+    const y = ((d / 128.0) * HEIGHT) / 2;
     if (i === 0) {
       canvasCtx.moveTo(x, y);
     } else {
       canvasCtx.lineTo(x, y);
     }
-
     x += sliceWidth;
-  }
+  });
   canvasCtx.lineTo(canvas.width, canvas.height / 2);
   canvasCtx.stroke();
 };
