@@ -177,18 +177,18 @@ const canvasCtx = canvas.getContext("2d");
 const draw = () => {
   const WIDTH = window.innerWidth - 16;
   const HEIGHT = 300;
-  let drawVisual = requestAnimationFrame(draw);
+  requestAnimationFrame(draw);
   analyser.getByteTimeDomainData(dataArray);
   canvasCtx.fillStyle = "rgb(0, 0, 0)";
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
   canvasCtx.lineWidth = 2;
   canvasCtx.strokeStyle = "rgb(124,252,0)";
   canvasCtx.beginPath();
-  let sliceWidth = (WIDTH * 1.0) / bufferLength;
+  const sliceWidth = (WIDTH * 1.0) / bufferLength;
   let x = 0;
   for (let i = 0; i < bufferLength; i++) {
-    var v = dataArray[i] / 128.0;
-    var y = (v * HEIGHT) / 2;
+    const v = dataArray[i] / 128.0;
+    const y = (v * HEIGHT) / 2;
 
     if (i === 0) {
       canvasCtx.moveTo(x, y);
